@@ -1,0 +1,450 @@
+---
+title: "Regresión Simple y Correlación"
+author: "Cesar Pepi"
+date: "01/05/2024"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+Listado de Librerias que se usaran durante el tema de Regresión Lineal y Correlación:
+
+```{r librerias, message=FALSE, warning=FALSE, comment=""}
+library(fdth)
+library(ggplot2)
+library(psych)
+library(moments)
+library(plotly)
+library(GGally)
+library(ggpubr)
+```
+<center><h1> Regresión Lineal y Correlación </h1></center>
+
+<p>La Regresión Lineal es un modelo matemático usado para encontrar la relación de dependencia entre una variable dependiente Y, de variable independiente X y un término aleatorio E (Epsilon) que recoge todos aquellos factores de la realidad no controlables u observables y que por lo tanto se asocian con el azar, y es la que confiere al modelo su caracter estocástico. </p>
+
+
+<p>El objetivo de la regresión lineal es usarla para predecir un comportamiento de una variable dado la relación de otra. El metodo usa la distancia de mínimos cuadrados para el cálculo.</p>
+
+<p>El modelo de regresión lineal simple sólo está conformado por dos variables estadísticas llamadas X y Y. Considera una única variable independiente o explicativa, X, y una variable dependiente o respuesta, Y, asumiendo que la relación entre ambas es lineal. Para la regresión lineal simple, se asume que X y Y se relacionan mediante la relación funcional (siendo β1 y β0 estimadores):
+{\displaystyle Y=\beta _{0}+\beta _{1}X+\varepsilon }
+</p>
+
+
+<p>Primeramente aplicaremos herramientas estadísticas a los datos, diagrama de Dispersión, Valores de "r" para la Correlación y en base a lo anterior aplicamos la Regresión Lineal. <p> 
+
+<p>Es necesario analizar la correlación o asociación entre el par de datos, lo cuál nos dará una idea que tan fuerte es la relación entre dichos datos.  </p>
+
+<p>El Coeficiente de correlación lineal "r", se define como el número que mide qué tan bien se ajustan los datos muestrales pareados a un patrón de línea recta al ser graficados.</p>
+
+<p> Por lo tanto existe una correlación entre dos variables cuando los valores de una variable están de alguna manera asociados con los valores de la otra variable.</p>
+
+<b><p> Cabe mencionar, que la Correlación no implica Causalidad </p></b>
+
+<p> Los valores de "r" van de -1 a 1. Al estar mas cerca a los límites es mas fuerte la correlación. </p>
+
+<p> La metodología para aplicar el modelo de Regresión Lineal la podemos definir de la siguiente manera:</p>
+<ul> Definir el problema a resolver, estó es entender que datos se van a analizar y evitar elaborar un modelo donde los resultados aunque pueden estar correctos, no son resultados reales o una Relación Espuria o Falsa. </ul>
+<ul>
+<li> Aplicar estadistica basica a los datos, ¿son normales? ¿existen outliers o valores atipicos ? </li>
+<li> Aplicar diagrama de dispersión. </li>
+<li> Aplicar Correlación, valores de "r".</li>
+<li> Aplicar Pruebas estadisticas Shapiro test, t de student. </li>
+<li> Aplicar Regresión Lineal. </li>
+<li> Con la ecuacón resultante proyectar o calcular una predicción. </li>
+</ul>
+
+<h2> Ejemplo 1 </h2>
+<p> Definimos valores en dos vectores, uno llamado Ahorro y otro Rendimiento y los colocamos dentro de un dataframe llamado DF1.</p>
+<p>Sabemos de antemano que entre mas ahorremos, el rendimiento es mayor y se puede pensar que el par de datos si tiene relación a simple vista. </p>
+
+```{r datosDF1}
+# n valores pareados
+Ahorro =      c(100, 200, 300, 100, 300, 400, 100, 200, 300, 500)
+Rendimiento = c(105, 211, 315, 106, 317, 421, 106, 209, 317, 528)
+DF1 <- data.frame(Ahorro, Rendimiento)
+```
+
+
+<h3> Exploración de Datos</h3>
+<p>Para la exploración de datos, usaremos <i>summary </i>, <i> describe </i> y ejecutamos <i>str</i> para saber de que tipo es el dataframe, y con  <i>head</i>, <i>tail</i>, <i>table</i> para ver el contenido del dataframe. </p> 
+
+
+```{r summaryDF1, echo=TRUE}
+summary(DF1)
+describe(DF1)
+str(DF1)
+head(DF1)
+tail(DF1)
+table(DF1)
+```
+<p>La Regresión Líneal es muy suceptible a los valores atípicos o "outliers" así que es necesario ejecutar un boxplot para observar la dispersión de datos. </p>
+```{r graficas1 boxplot, echo0=TRUE}
+boxplot(DF1, horizontal = T) 
+stripchart(DF1, method = "jitter", pch = 19, add = TRUE, col = "blue")
+
+```
+<p><b>Resultados: </b> No se observan valores atípicos o "outliers", podemos usar herramientas mas avanzadas para detectar "outliers" la gráfica del boxplot es visual y nos da una idea de la distribución de los datos.</p>
+
+
+
+
+<h2>Diagrama de Dispersión y Correlación </h2>
+<p> Con el lenguaje R tenemos varias herramientas para gráficar y elaborar los Diagramas de Dispersión, aunque será redundate las gráficas, es solo para mostrar las herramientas que podemos utilizar. </p>
+
+<p> Primeramente un "plot" para graficar los datos. </p>
+```{r dispersion1, echo=TRUE}
+plot(DF1)
+```
+<p> Resultados:  Observamos que los datos "dibujan" una línea recta <p>
+
+<p> Ahora utilizamos "ggscatter" de la librería ggpubr. Observemos que en los parametros podemos incluir el valor de R  usando el metodo de Pearson, y el valor de p-value. </p>
+```{r dispersionDF1, echo=TRUE}
+ggscatter(DF1, x = "Ahorro", y = "Rendimiento", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "Ahorro", ylab = "Rendimiento")
+```
+```{r regresionDF1, echo=TRUE}
+g = ggplot(DF1, aes(x = Ahorro, y = Rendimiento))
+g = g + xlab("Ahorro en Millones")
+g = g + ylab("Rendimiento en Millones")
+g = g + geom_point(size = 7, colour = "black", alpha=0.6)
+g = g + geom_point(size = 5, colour = "blue", alpha=0.2)
+g = g + geom_smooth(method = "lm", colour = "black")
+g
+```
+
+<p> Ejecutemos el comando "cor" que nos regresa el valor de Correlación, existen varios métodos, usaremos "pearson" en el ejemplo, y en el mismo bloque graficaremos los datos con "pairs" y "ggpairs" que son otras gráficas de Dispersión y arrojan mas información. </p>
+```{r Diagrama de DispersiónDF1, echo=TRUE}
+# Sintaxis de cor
+# cor(Ahorro, Rendimiento, method = c("pearson", "kendall", "spearman"))
+cor(DF1, method = c("pearson"))
+pairs(DF1)
+ggpairs(DF1)
+
+ggplot(DF1, aes(x= Ahorro, y = Rendimiento)) + geom_point()
+```
+
+
+
+
+<p><b> Resultados: </b> Se observa la línea recta que se ajusta a los datos que son los puntos, y también tenemos el valor de R, es este ejemplo es igual a 1, lo cual nos indica que la correlación es muy fuerte. Al ser el valor positivo, decimos que la correlación positiva, esto significa que al incrementar el valor en X el valor en Y tambíén aumentará.  </p>
+<p> Correlación positiva " / " </p>
+<p> Correlación negativa "\\ "</p>
+<p> Sin Correlación "---"
+
+<p>Ya por último es necesario ejecutar una Prueba de normalidad de dichos datos y evaluamos el valor de p-value.</p> 
+<p> En la variable a analizar, si se tiene que p > 0.05 decimos que es una Distribución Normal, al contrario si el valor de P < 0.05 podemos decir tenemos una Distribución que no es Normal. </p>
+
+<p> Usaremos la prueba de Shapiro, que es una de las más utilizadas.</p>
+```{r normalidad1, echo=TRUE}
+# 
+shapiro.test(DF1$Ahorro)
+shapiro.test(DF1$Rendimiento)
+```
+<p> Evaluemos con un "if" el p.value, de esa manera evaluamos el p.value en forma automática </p>
+
+```{r normalidadDF21, echo=TRUE, message=FALSE}
+# 
+shapiro.test(DF1$Ahorro)
+DF1.Ahorro <- shapiro.test(DF1$Ahorro)
+  if (DF1.Ahorro$p.value > 0.05) {
+     "Es Normal"
+  }else "No es Normal"
+
+
+shapiro.test(DF1$Rendimiento)
+DF1.Rendimiento <- shapiro.test(DF1$Rendimiento)
+  if (DF1.Rendimiento$p.value > 0.05) {
+     "Es Normal"
+  }else "No es Normal"
+
+
+
+```
+<p> <b> Resultados: </b> Interpretando los resultados, en ambos casos los valores de p-value son mayores a 0.05 que es nuestro nivel de significancia, por lo tanto asumimos que los valores siguen una distribución Normal. </p>
+
+<h3> Regresión Lineal </h3>
+<p>Dada una colección de datos muestrales pareados, la línea de regresión (o línea de mejor ajuste, o línea de mínimos cuadrados) es la línea recta que "mejor" se ajusta al diagrama de dispersión de los datos. 
+La ecuación de regresión describe algebraicamente la línea de regresión. La ecuación de regresión expresa una relación entre x (llamada variable explicativa, variable predictora, o variable independiente) y y^ (llamada variable de respuesta o variable dependiente). </p>
+
+<p> Para la Regresión Lineal usaremos el comando "lm" y para visualizar los resultados ejecutaremos <i>summary </i>. </p>
+```{r regresion3, echo=TRUE}
+mod_1 <- lm(Rendimiento ~ Ahorro, data = DF1)
+summary(mod_1)
+mod_1$coefficients
+plot(mod_1$model)
+plot(mod_1$residuals, type = "l")
+plot(x=c(tail(mod_1$residuals, -1),0),y=mod_1$residuals)
+
+```
+
+
+<p><b> Resultados: </b></p>
+<p>Nos podemos guiar primeramente por la cantidad de "asteristicos" en este caso tenemos 3"*" para Rendimiento.</p>
+<p>Segundo el valor absoluto de t value, mayor a 2, tenemos un resultado de 425.272, que es mayor a 2. </p> 
+<p>Tercero el valor de Multiple R-squared = 1 y Adjusted R-squared = 1, este valor nos explica que tanto se ajusta el modelo, el valor va de 0 a 1, 0 no existe ajuste, 1 se ajusta perfectamente, y los valores intermedios que nos explicara el porciento de que tanto se ajustan. </p> 
+<p>Cuarto el valor de p-value menor a 0.05</p>
+
+<p> La intención del ejemplo anterior es mostrar un caso cercano a lo optimo de una regresión lineal con una correlación de 1 </p>
+<p> Ahora pasemos a calcular la predicción, recordemos la ecuación de la Recta que es y = m + bx; para la Regresión Lineal se explica de la siguiente manera:</p>
+<p>y = b0 + b(x)</p>
+<p>y = -0.21212 + 1.05485 (Valor de Predicción), es decir si ahorramos $350 al sustituir el valor en la ecuación:</p>
+<p>y = -0.21212 + 1.05485 * (350) =  <b>368.9854</b> </p>
+
+```{r resultado1, echo=TRUE}
+y = -0.21212 + 1.05485 * (350)
+print(paste("El rendimientos es", y))
+```
+<p>Otra manera de realizar el cálculo usando los coeficientes: <p>
+```{r resultado3_3, echo=TRUE}
+mod_1$coefficients[1]
+mod_1$coefficients[2]
+
+y1 = mod_1$coefficients[1] + mod_1$coefficients[2] * (350)
+print(paste("El rendimientos es", y1))
+```
+<p> Otra manera de obtener la predición. </p>
+```{r resultado4_4, echo=TRUE}
+beta1 <- cor(Rendimiento, Ahorro) * sd(Rendimiento) / sd(Ahorro)
+beta0 <- mean(Rendimiento) - beta1 * mean(Ahorro)
+rbind (c(beta0, beta1), coef(lm(Rendimiento ~ Ahorro)))
+y2 <- beta0 + beta1 * (350)
+print(paste("El rendimientos es", y2))
+```
+<p> Otra manera de obtener los coeficientes con el comando "fit". Insertaremos 3 elementos para realizar los cálculos de la predicción. </p>
+
+```{r resultado5, echo=TRUE}
+fit <- lm(Rendimiento ~ Ahorro, data = DF1)
+coef (fit)
+```
+```{r resultado6, echo=TRUE}
+newx <- c(350, 425, 560)
+coef (fit)[1] + coef(fit)[2] * newx
+```
+<p> Ahora usaremos "predict" para predecir los valores de Y. </p>
+```{r resultado7, echo=TRUE}
+newx <- c(350, 425, 560)
+predict(fit, newdata = data.frame(Ahorro = newx))
+```
+
+
+<h2>Ejemplo 2 </h2>
+<p> En el siguiente ejemplo, veremos como interactua un KPI (Key Performance Indicator) interno en un resultado externo. <p>
+
+```{r dataDF2, echo0=TRUE}
+KPIin = c(54,69,65,106,74,66,108,120,94,98,85,77,86,65,62,67)
+KPIOut = c(22,17,9,3,23,37,23,29,22,21,14,24,12,10,9,12)
+DF2 <- data.frame(KPIin, KPIOut)
+  
+```
+
+<h3> Exploración de Datos</h3>
+<p>Para la exploración de datos, usaremos <i>summary </i>, <i> describe </i> y ejecutamos <i>str</i> para saber de que tipo es el dataframe, y con  <i>head</i>, <i>tail</i>, <i>table</i> para ver el contenido del dataframe. </p> 
+
+
+```{r summaryDF2, echo=TRUE}
+summary(DF2)
+describe(DF2)
+str(DF2)
+head(DF2)
+tail(DF2)
+table(DF2)
+```
+<p>La Regresión Líneal es muy subsetible a los valores atípicos o "outliers" así que es necesario ejecutar un boxplot para observar la dispersión de datos. </p>
+```{r graficas3 boxplot, echo0=TRUE}
+boxplot(DF2, horizontal = T) 
+stripchart(DF2, method = "jitter", pch = 19, add = TRUE, col = "blue")
+
+```
+<p><b>Resultados: </b> No se observan valores atípicos o "outliers", podemos usar herramientas mas avanzadas para detectar "outliers" la gráfica del boxplot es visual y nos da una idea de la distribución de los datos.</p>
+
+
+
+
+<h2>Diagrama de Dispersión y Correlación </h2>
+<p> Con R tenemos varias herramientas para gráficar y elaborar los Diagramas de Dispersión, aunque será redundate las gráficas, es solo para mostrar las herramientas que podemos utilizar. </p>
+
+<p> Primeramente un "plot" para graficar los datos. </p>
+```{r dispersion2, echo=TRUE}
+plot(DF2)
+```
+<p> Resultados:  Observamos que los datos casi "dibujan" una línea recta. <p>
+
+<p> Ahora utilizamos "ggscatter" de la librería ggpubr. Observemos que en los parametros podemos incluir el valor de "r"  usando el metodo de Pearson, y el valor de p-value. </p>
+```{r dispersionDF2, echo=TRUE}
+ggscatter(DF2, x = "KPIin", y = "KPIOut", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "KPI Entrada", ylab = "KPI Salida")
+```
+```{r regresionDF2, echo=TRUE}
+g = ggplot(DF2, aes(x = KPIin, y = KPIOut))
+g = g + xlab("KPI Entrada")
+g = g + ylab("KPI Salida")
+g = g + geom_point(size = 7, colour = "black", alpha=0.6)
+g = g + geom_point(size = 5, colour = "blue", alpha=0.2)
+g = g + geom_smooth(method = "lm", colour = "black")
+g
+```
+
+<p> Ejecutemos el comando "cor" que nos regresa el valor de Correlación, existen varios métodos, usaremos "pearson" en el ejemplo, y en el mismo bloque graficaremos los datos con "pairs" y "ggpairs" que son otras gráficas de Dispersión y arrojan mas información. </p>
+```{r Diagrama de DispersiónDF2, echo=TRUE}
+# Sintaxis de cor
+# cor(Ahorro, Rendimiento, method = c("pearson", "kendall", "spearman"))
+cor(DF2, method = c("pearson"))
+pairs(DF2)
+ggpairs(DF2)
+
+ggplot(DF2, aes(x= KPIin, y = KPIOut)) + geom_point()
+```
+
+
+
+
+<p><b> Resultados: </b> Se observa la línea recta que se ajusta a los datos que son los puntos, y también tenemos el valor de la correlación, es este ejemplo es igual a 0.131, lo cual nos indica que la correlación es muy debil. Al ser el valor positivo, decimos que la correlación positiva, esto significa que al incrementar el valor en X el valor en Y tambíén aumentará. </p>
+
+
+
+<p>Ya por último es necesario ejecutar una Prueba de normalidad de dichos datos y valoramos el valor de p-value.</p> 
+
+```{r normalidad2, echo=TRUE}
+# 
+shapiro.test(DF2$KPIin)
+shapiro.test(DF2$KPIOut)
+```
+```{r normalidadDF2_1, echo=TRUE, message=FALSE}
+# 
+shapiro.test(DF2$KPIin)
+DF2.KPIin <- shapiro.test(DF2$KPIin)
+  if (DF2.KPIin$p.value > 0.05) {
+     "Es Normal"
+  }else "No es Normal"
+
+
+shapiro.test(DF2$KPIOut)
+DF2.KPIOut <- shapiro.test(DF2$KPIOut)
+  if (DF2.KPIOut$p.value > 0.05) {
+     "Es Normal"
+  }else "No es Normal"
+
+```
+<p> <b> Resultados: </b> Interpretando los resultados, en ambos casos los valores de p-value son mayores a 0.05 que es nuestro nivel de significancia, por lo tanto asumimos que los valores siguen una distribución normal. </p>
+
+<h2> Regresión Lineal </h2>
+
+<p> Para la Regresión Lineal usaremos el comando "lm" y para visualizar los resultados ejecutaremos "summary" </p>
+```{r regresion2, echo=TRUE}
+mod_2 <- lm(KPIOut ~ KPIin, data = DF2)
+summary(mod_2)
+mod_2$coefficients
+plot(mod_1$model)
+plot(mod_1$residuals, type = "l")
+plot(x=c(tail(mod_1$residuals, -1),0),y=mod_1$residuals)
+
+```
+
+
+<p><b> Resultados: </b></p>
+<p>Nos podemos guiar primeramente por la cantidad de "asteristicos" en este caso no tenemos para KPIin.
+<p>Segundo el valor absoluto de t value, mayor a 2, tenemos un resultado de 0.495 que es menor a 2. </p> 
+<p>Tercero el valor de Multiple R-squared = 0.01722 Adjusted R-squared = -0.05298, este valor nos explica que tanto se ajusta el modelo, el valor va de 0 a 1, 0 no existe ajuste, 1 se ajusta perfectamente, y los valores intermedios que nos explicara el porciento de que tanto se ajustan. </p> 
+<p>Cuarto el valor de p-value es mayor a 0.05</p>
+
+<p> La intención del ejemplo anterior es mostrar un ejemplo de una regresión lineal con una correlación casi nula, lo cuál nos indica que no hay correlación, puede ser debido a varios factores, una puede ser que los datos no sean los suficientes, se recomiendan  al menos 30 datos, la segunda es que realmente no existe correlación entre dichos datos.   </p>
+
+<p> Aún asi continuaremos con las predicciones para medios didácticos. </p>
+
+<p> Recordemos la ecuación de la Recta que es y = m + bx; para la Regresión Lineal se explica de la siguiente manera:</p>
+
+
+<p>y = b0 + b(x)</p>
+<p>y = 13.12604798 + 0.05940064 (Valor de Predicción), es decir si el KPIin es 44 al sustituir el valor en la ecuación:</p>
+<p>y = 13.12604798 + 0.05940064 * (44) =  <b>15.73967614</b> </p>
+
+```{r resultado2_1, echo=TRUE}
+y1 = 13.12604798 + 0.05940064 * (44)
+print(paste("El KPIOut es igual a", y1))
+```
+<p>Otra manera de realizar el cálculo, usando los coeficientes: <p>
+```{r resultado2_2, echo=TRUE}
+mod_2$coefficients[1]
+mod_2$coefficients[2]
+
+y1 = mod_2$coefficients[1] + mod_2$coefficients[2] * (44)
+print(paste("El KPIOut es igual a", y1))
+```
+<p> Otra manera de obtener la predicción: </p>
+```{r resultado2_4, echo=TRUE}
+beta1 <- cor(KPIOut, KPIin) * sd(KPIOut) / sd(KPIin)
+beta0 <- mean(KPIOut) - beta1 * mean(KPIin)
+rbind (c(beta0, beta1), coef(lm(KPIOut ~ KPIin)))
+y2 <- beta0 + beta1 * (44)
+print(paste("El KPIOut es igual a ", y2))
+```
+<p> Otra manera de obtener los coeficientes, usando el comando "fit": </p>
+
+```{r resultado2_5, echo=TRUE}
+fit <- lm(KPIOut ~ KPIin, data = DF2)
+coef (fit)
+```
+```{r resultado2_6, echo=TRUE}
+newx <- c(44, 55, 44)
+coef (fit)[1] + coef(fit)[2] * newx
+```
+<p> Ahora usaremos "predict" para predecir los valores de Y </p>
+```{r resultado2_7, echo=TRUE}
+newx <- c(44, 55, 180)
+predict(fit, newdata = data.frame(KPIin = newx))
+```
+
+<p> Ahora que el tema fue brevemente explicado, agrega datos a DF1 y analiza los nuevos resultados.</p>
+<p>Ahorro: 10, 1000, 3000, 55 </p>
+<p>Rendimiento: 30, 1500, 2800, 320 </p>
+<p></p>
+<p>¿Hay valores atípicos? </p>
+<p>¿Siguen el conjunto de datos siendo normales?</p>
+<p>¿Que sucede con la Std. Error en el modelo lm?</p>
+<p>¿Que importancia tienen los valores residuales en el modelo de Regresión Lineal?</p>
+
+<p><b>Conclusión:</b></p>
+Al aplicar regresión simple, debemos de entender e identificar el problema a resolver, no solo hacer gráficas elegantes, la interpretación de los resultados es vital, tenemos que tener cuidado de la metodología de cada modelo, ya que si no cumple con las condiciones, el metodo empleado para dicha resolucion del problema debe ser cambiado.</p> 
+<p>Aplicar exploración de datos, Diagramas de Dispersión y Correlación, Pruebas de Normalidad y Regresión Multiple, teniendo en cuenta lo antes dicho podemos proceder con la predicción. </p>
+
+<p></p>
+<p> ¿Por que entender el problema o saber el tema a analizar?, ver la siguiente página con algunos ejemplos</p>
+
+<a href = "https://www.xataka.com/magnet/a-margarina-divorcios-11-divertidos-ejemplos-que-correlacion-no-implica-causalidad" target = "_blank">https://www.xataka.com/magnet/a-margarina-divorcios-11-divertidos-ejemplos-que-correlacion-no-implica-causalidad </a>
+
+
+<hr>
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+<p>Referencias:</p>
+<p><a href = "https://rpubs.com/Cpepi/832141" target="_blank"> https://rpubs.com/Cpepi/832141 </a></p>
+
+<p><a href = "https://es.wikipedia.org/wiki/Regresi%C3%B3n_lineal" target="_blank">https://es.wikipedia.org/wiki/Regresi%C3%B3n_lineal </a></p>
+
+<p><a href = "http://www.mat.uda.cl/hsalinas/cursos/2011/2do/clase2.pdf" target="_blank"> http://www.mat.uda.cl/hsalinas/cursos/2011/2do/clase2.pdf </a></p>
+
+<p><a href = "https://r-coder.com/grafico-barras-r/" target="_blank"> https://r-coder.com/grafico-barras-r/ </a></p>
+
+<p><a href = "https://www.rdocumentation.org/" target="_blank"> https://www.rdocumentation.org/ </a> </p>
+
+
+
+
+<p>K cpepi</p>
+<img src="PEPI.jpg" alt="cpepi@yahoo.com" title ="Cesar Pepi" style="width:90px;height:45px;">
+
+<p>Versión 1.5, Revisión 01.05.2024.mx</p>
+<p>May 1, 2024</p>
+
+
+
+
+
