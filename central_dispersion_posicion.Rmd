@@ -1,0 +1,333 @@
+---
+title: "Medidas de Tendencia Central, Dispersión y de Posición"
+author: "Cesar Pepi"
+date: "6/11/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+Listado de Librerias que se usaran durante el tema de Medidas de Tendencia Central, Dispersion y de Posiciòn:
+
+```{r librerias, message=FALSE, warning=FALSE, comment=""}
+library(fdth)
+library(ggplot2)
+library(psych)
+library(moments)
+library(plotly)
+```
+<center><h1> Medidas de Tendencia Central </h1></center>
+
+Para la expliación del tema, primeramente definimos 10 calificaciones con valores enteros en el vector llamado "calificaciones".
+
+
+```{r datos}
+# 10 calificaciones con valores enteros
+calificaciones = c(5, 7, 8, 8, 10, 9, 7, 6, 8, 9)
+```
+
+<h2> Exploración de Datos</h2>
+<p>Para la exploración de datos, para obtener un resumen del vector "calificaciones" usaremos <i>summary </i>, y ejecutamos <i>str</i> para saber de que tipo es el vector, y con  <i>head</i> para ver el contenido del vector. </p> 
+```{r summary, echo=TRUE}
+summary(calificaciones)
+str(calificaciones)
+head(calificaciones)
+tail(calificaciones)
+```
+<p>De los resultados mostrados con <i>summary</i> observamos que la calificación mínima es 5 y la máxima es 10. El promedio "Mean" es 7.70 y el valor de la mediana "Median" es 8.0.  </p>
+
+<p> <i> str </i> nos indica que los datos contenidos en la lista son num, es decir del tipo numericos y que el vector contiene 10 elemento [1:10].</p>
+
+<p> <i>head</i> muestra los primeros 5 valores del vector por default</p>
+<p> ¿Que datos muestra el comando <i>tail</i>?, intenta la siguiente linea: head(calificaciones, n=-5) </p>
+
+<hr/>
+<h2> Medidas de Tendecia Central </h2>
+<h3> Media, Mediana y Moda </h3>
+<p> Para obtener el promedio o la media de los datos utilizamos <i>mean</i>.  Para la mediana utilizamos <i>median</i> de los datos que es el valor medio de dichos datos. Recordemos que la mediana es el valor central, y el promedio es la suma total de las observaciones entre el número de observaciones. </p>
+
+<p> No existe una función especifica en R para obtener la Moda de los datos, usaremos la función "table()" para el ejemplo </p> 
+
+```{r medcentral, echo=TRUE}
+mean(calificaciones)
+median(calificaciones)
+
+# Una forma de encontrar la Moda de un vector de datos
+table(calificaciones) # Usando Table(vector)
+mode1 <- sort(table(calificaciones), decreasing = T) # Ordenamos el vector, y se asigna a la variable "mode1"
+mode1   # Desplegamos la variable "mode1"
+
+
+
+```
+<p> Observamos que el promedio es 7.7 y que la media de los datos es 8 </p>
+<p> Podemos observar que la calificación 8 se repite 3 veces, el 7 dos veces y asi consecutivamente, por lo tanto la moda es 8, ya que es el que repite mas veces. </p>
+
+<p> Para obtener una tabla de frecuencias utilizamos la librería fdth, con la función fdt. La instrucción <i> range</i> nos devuelve el valor mínimo y máximo del vector "calificaciones"</p>
+
+```{r fdh, echo=TRUE}
+range(calificaciones) # Funcion "range" valor mínimo y máximo del vector calificaciones
+tabladeFrec <-fdt(calificaciones, breaks = "Sturges", 
+                  start = 5, end = 11, h = 1) # Con parámetros de start, end y h que es el ancho de la clase del intervalo
+tabladeFrec  # Desplegamos el resultado
+
+tabladeFrec1 <-fdt(calificaciones, breaks = "Scott", 
+                  k = 5) # Usamos el metodo Scott y como parametro K que es el número de clases del intervalo
+tabladeFrec1  # Desplegamos el resultado
+
+
+#Donde: 
+#f= frecuencia absoluta
+#rf= frecuencia relativa
+#rf(%) frecuencia relativa porcentual
+#cf= frecuencia acumulada
+#cf(%)=frecuencia acumulada porcentual
+
+```
+<p> En las opciones de la función fdt, los parametros "start" y "end" definen el inicio con el valor mínimo y máximo para la distribución de los datos </p>
+
+<p><b> Ejercicio: </b></p>  
+<p>a).- Modifique el parametro "start" igual a 0. </p>
+<p>b).- Remueva los parametros "start" y "end"   </p>
+<p>c).- Utiliza el parametro h=2 </p>
+<p>d).- Modifica el parametro K = 3 en tabladeFrec1 </p>
+
+
+<h3> Gráficas para representar los datos </h3>
+<p>Un Histograma es un gráfico de distribuciones de frecuencias de un grupo de datos estadísticos, para poder observar la distrubución de los datos en una gráfica de barras <p/>
+<p>La función "density" la usamos para observar la distribución de datos en una campana de Gauss</p>
+
+```{r graficas3, echo=TRUE}
+hist(calificaciones)
+d <- density(calificaciones)
+plot(d)
+```
+<h5> Skewness </h5>
+<p> Para calcular "skewness" usamos la libreria "moments". El "skewness" nos indica la asimetría de una gráfica de campana de Gauss; que tan simetrica es la distribución de datos. Los valores van de -1 a 1, un valor mas cercano a cero siginifica que la distribución es simetrica </p> 
+<ul>
+<li> Distribución sesgada a la izquierda, si la asimetría es positiva: media > mediana > moda </li>
+
+<li> Normal nos indica una distribución centrada o en forma de campana</li>
+
+<li>Distribución sesgada a la derecha o asimetría es negativa: media < mediana < moda </li>
+</ul>
+
+```{r skewness, echo0=TRUE}
+skewness(calificaciones)  
+```
+<p> El resultado de -0.3031933 nos indica que la distribución esta sesgada a la derecha, lo cuál lo podemos constatar en la gráfica de <i>density</i>
+
+<h5> Kurstosis </h5>
+<p> Para calcular "Kurtosis" usamos la libreria "moments". La curtosis es una medida estadística que determina el grado de concentración que presentan los valores de una variable alrededor de la zona central de la distribución de frecuencias. También es conocida como medida de apuntamiento.</p>
+<ul>
+<li> Distribución platicúrtica (apuntamiento negativo): indica que en sus colas hay más casos acumulados que en las colas de una distribución normal. Existe una baja concentración de los valores en torno a su media, es decir, hay datos mas dispersos</li>
+<li>Distribución leptocúrtica (apuntamiento positivo): existe una gran concetración de los valores en torno a su media.Existe menos dispersión de datos</li>
+<li>Distribución mesocúrtica (apuntamiento normal): como en la distribución normal, existe una concentración normal de los valores en torno a su media </li>
+</ul>
+
+
+```{r kurtosis, echo0=TRUE}
+kurtosis(calificaciones)  
+```
+<hr/>
+<h2> Medidas de Dispersión </h2>
+<p> La varianza es una medida de dispersión que representa la variabilidad de una serie de datos respecto a su media. Mientras que la la desviación estándar es la raíz cuadrada del promedio de las distancias al cuadrado que van desde las observaciones a la media. </p>
+```{r dispersion, echo0=TRUE}
+var(calificaciones)  # Calcular la varianza del vector calificaciones  
+sd(calificaciones) # Calcular la desviación estándar del vector calificaciones
+
+DevStd <-  sqrt(var(calificaciones)) # Asignar el valor de la varianza a la variable DevStd
+print(paste("El valor de la desviación estándar es : ", DevStd))
+```
+
+<hr/>
+<h2> Estadisticos de Posición </h2>
+
+<p> Utilizemos la función <i> describe </i> de la librería psych para obtener un resumen del vector calificaciones</p>
+```{r describe, echo0=TRUE}
+describe(calificaciones)    
+```
+
+<h4> Boxplot</h4>
+<p> Una gráfica que nos ayuda a observar como estan distribuidos los datos es la gráfica boxplot </p>
+
+```{r graficas1, echo0=TRUE}
+boxplot(calificaciones, horizontal = T)  
+
+```
+<p> Observamos que el valor mínimo es 5 y el máximo es 10, la linea negra que divide la gráfica es la mediana en este caso es 8 </p>
+
+<hr/>
+<h2> De Posición</h2>
+<h3> Quatiles y Percentiles </h3> 
+<p> Los quaintiles y los percentiles nos ayudan a ver la concentración de datos, dependiendo de los paramentros de la función </p>
+```{r quantile, echo0=TRUE}
+max(calificaciones) - min(calificaciones) # Para obtener el valor entre el valor máximo y mínimo del vector
+range(calificaciones) # Obtener el rango
+quantile(calificaciones) # Obtener como estan posicionados los datos
+quantile(calificaciones, c(.25, .50, .1)) # Encontrar el 25th, 50th, 75th en percentiles
+quantile(calificaciones, c(.1,.25,.5,.75,.90) ) #find the 10th, 25th, 50th, 75th and 90th percentiles
+
+```
+<p> Observamos que al ir cambiando los parametros dentro del contenedor <i>c</i> nos va mostrando diferentes valores. </p>
+
+<p>Los Cuantiles (cuartiles, deciles, percentiles) son medidas de localización, su función es informar del valor de la variable que ocupará la posición (en tanto por cien) que nos interese respecto de todo el conjunto de variables </p>
+
+<hr/>
+
+<p> Ahora uniremos las 3 gráficas para observar mas detalle de la distribución y posición del datos del vector calificaciones </p>
+<p> usamos <i>par(mfrow=c(1,3))<i> para dividir en 3 paneles o columnas, con una fila</p>
+```{r graficas2, echo0=TRUE, fig.width= 10}
+par(mfrow=c(1,3))
+hist(calificaciones)
+boxplot(calificaciones, horizontal = T) 
+plot(d)
+
+
+```
+<hr/>
+<p> Vamos a Modificar los datos del vector "calificaciones" para elaborar varios ejemplos </p>
+
+```{r datos1}
+# 10 calificaciones con valores enteros
+calificacionesizq = c(6, 6, 6, 6, 7, 7, 8, 8, 9, 10) # Datos cargados hacia la izquierda
+```
+
+<p>Gráficas</p>
+
+```{r graficasizq, echo0=TRUE, fig.width = 10}
+par(mfrow=c(1,3))
+hist(calificacionesizq)
+boxplot(calificacionesizq, horizontal = T) 
+d1 <- density(calificacionesizq)
+plot(d1)
+describe(calificacionesizq)
+
+
+```
+
+```{r datos2}
+# 10 calificaciones con valores enteros
+calificacionesder = c(5, 6, 7, 8, 9, 9, 10, 10,10,10) # Datos cargados hacia la derecha
+```
+
+<p>Gráficas</p>
+
+```{r graficasder, echo0=TRUE, fig.width=10}
+par(mfrow=c(1,3))
+hist(calificacionesder)
+boxplot(calificacionesder, horizontal = T) 
+d2 <- density(calificacionesder)
+plot(d2)
+describe(calificacionesder)
+
+
+```
+
+
+
+```{r nuevegraficas, echo0=TRUE, fig.width=10}
+par(mfrow=c(3,3))
+hist(calificaciones)
+boxplot(calificaciones, horizontal = T) 
+plot(d)
+
+hist(calificacionesizq)
+boxplot(calificacionesizq, horizontal = T) 
+d1 <- density(calificacionesizq)
+plot(d1)
+
+hist(calificacionesder)
+boxplot(calificacionesder, horizontal = T) 
+d2 <- density(calificacionesder)
+plot(d2)
+
+par(mfrow=c(1,1)) # Regresando al default 1 renglón, 1 columna
+```
+```{r nueveagraficas, echo0=TRUE, fig.width=10}
+par(mfrow=c(3,3))
+hist(calificaciones)
+hist(calificacionesizq)
+hist(calificacionesder)
+
+boxplot(calificaciones, horizontal = T) 
+boxplot(calificacionesizq, horizontal = T) 
+boxplot(calificacionesder, horizontal = T) 
+
+plot(d)
+plot(d1)
+plot(d2)
+
+par(mfrow=c(1,1)) # Regresando al default 1 renglón, 1 columna
+```
+
+
+<hr/>
+<p> Modificando las gráficas, mejorando la visualización </p>
+
+```{r graficas6, echo=TRUE}
+boxplot(calificaciones,
+    horizontal = T,  # Horizontal
+    notch  = T,      # Confidence interval for median
+    main   = "Boxplot de Calificaciones",
+    sub    = "(Fuente: Escuela Ricalliyi)",
+    xlab   = "Calificaciones",
+    col    = "#CD0000"  # red3
+  ) 
+```
+
+
+
+<p>Histograma con mas detalles</p>
+
+```{r graficas4, echo=TRUE, warning=FALSE}
+
+barplot(calificaciones, main = "Calificaciones",
+        xlab = "Calificaciones", ylab = "Calificación",
+        col = rainbow(5))
+
+plot(calificaciones) # Un simple plot sobre el vector calificaciones
+fig <-plot_ly(x = calificaciones, type = "box") # Que pasa si cambias la instrucción a y = calificaciones
+fig
+```
+
+<p>Gráfica, barplot horizontal </p>
+
+```{r graficas5, echo=TRUE}
+
+  barplot(calificaciones, 
+    main   = "Calificaciones del Grupo de Ciencias Ocultas",
+    sub    = "(Fuente: Escuela Ricalliyi::Calificaciones)",
+    horiz  = T,  # Barras Horizontales
+    ylab   = "Calificación",  # eje y calificaciones
+    xlab   = "Frecuencias",
+    xlim   = c(0, 10),  # Limites para eje x
+    border = NA,  # sin marcos
+    col    = "#CD0000"  # red3
+  )
+
+```
+```{r strippchart, echo=TRUE}
+boxplot(calificaciones, horizontal = T)
+stripchart(calificaciones, method = "jitter", pch = 19, add = TRUE, col = "blue")
+
+```
+
+
+<hr/>
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+Referencias:
+<p><link> https://digitaschools.com/descriptive-statistics-skewness-and-kurtosis/ </link></p>
+<p><link>http://www.mat.uda.cl/hsalinas/cursos/2011/2do/clase2.pdf</link></p>
+<p><link>https://r-coder.com/grafico-barras-r/</link></p>
+<p><link>https://www.rdocumentation.org/</link></p>
+<p>K cpepi</p>
+<p> Version 1.0, Nov 6, 2021 </p>
+<p>P1</p>
+
+
+
